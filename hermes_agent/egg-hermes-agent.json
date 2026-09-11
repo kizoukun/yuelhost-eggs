@@ -1,0 +1,122 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": "https://raw.githubusercontent.com/kizoukun/yuelhost-eggs/main/hermes_agent/egg-hermes-agent.json"
+    },
+    "exported_at": "2026-09-11T13:26:14+00:00",
+    "name": "Hermes Agent",
+    "author": "app.baliexception@gmail.com",
+    "description": "Hermes Agent by Nous Research, the self-improving open-source AI agent, running as a Telegram / Discord messaging gateway with persistent memory, skills and cron.\n\nSet an LLM API key plus a bot token and allowed user IDs, then start the server. Other providers and platforms can be configured in .hermes/.env and .hermes/config.yaml.\n\nhttps://github.com/NousResearch/hermes-agent",
+    "features": null,
+    "docker_images": {
+        "Hermes Agent (latest)": "ghcr.io/kizoukun/yolks:hermes_agent"
+    },
+    "file_denylist": [],
+    "startup": "if [ -n \"${HERMES_PROVIDER}\" ]; then hermes config set model.provider \"${HERMES_PROVIDER}\"; fi; if [ -n \"${HERMES_MODEL}\" ]; then hermes config set model.default \"${HERMES_MODEL}\"; fi; exec hermes gateway run --replace -v",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": [\n        \"Gateway running with\",\n        \"No messaging platforms enabled\",\n        \"Gateway started with no connected platforms\",\n        \"No adapter could be created\"\n    ]\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n# Hermes Agent installation script\n# The Hermes Agent code ships in the yolk image; only agent data lives on the server.\nmkdir -p /mnt/server/.hermes\necho \"Hermes Agent install complete\"\n",
+            "container": "debian:bookworm-slim",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "LLM Provider",
+            "description": "Inference provider: openrouter, anthropic, gemini, zai, kimi-coding, minimax, nous-api. Leave blank to auto-detect from the API key.",
+            "env_variable": "HERMES_PROVIDER",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Model",
+            "description": "Default model, e.g. anthropic/claude-sonnet-4.6 on OpenRouter. Leave blank to keep the model in config.yaml.",
+            "env_variable": "HERMES_MODEL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "OpenRouter API Key",
+            "description": "API key from https://openrouter.ai/keys",
+            "env_variable": "OPENROUTER_API_KEY",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        },
+        {
+            "name": "Anthropic API Key",
+            "description": "API key from https://console.anthropic.com",
+            "env_variable": "ANTHROPIC_API_KEY",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        },
+        {
+            "name": "Gemini API Key",
+            "description": "API key from https://aistudio.google.com/app/apikey",
+            "env_variable": "GEMINI_API_KEY",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        },
+        {
+            "name": "Telegram Bot Token",
+            "description": "Bot token from @BotFather. Leave blank to disable Telegram.",
+            "env_variable": "TELEGRAM_BOT_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:256",
+            "field_type": "text"
+        },
+        {
+            "name": "Telegram Allowed Users",
+            "description": "Comma-separated Telegram user IDs allowed to talk to the agent. Nobody is allowed when blank.",
+            "env_variable": "TELEGRAM_ALLOWED_USERS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        },
+        {
+            "name": "Discord Bot Token",
+            "description": "Bot token from the Discord Developer Portal. Leave blank to disable Discord.",
+            "env_variable": "DISCORD_BOT_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:256",
+            "field_type": "text"
+        },
+        {
+            "name": "Discord Allowed Users",
+            "description": "Comma-separated Discord user IDs allowed to talk to the agent. Nobody is allowed when blank.",
+            "env_variable": "DISCORD_ALLOWED_USERS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        }
+    ]
+}
