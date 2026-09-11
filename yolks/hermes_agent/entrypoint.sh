@@ -15,6 +15,17 @@ while IFS='=' read -r name _; do
     unset "$name"
 done < <(env | grep -E '^[A-Za-z_][A-Za-z0-9_]*=$')
 
+# Earlier versions kept agent data in /home/container/.hermes; move it to the
+# server root once.
+if [ -d /home/container/.hermes ] && [ "$HERMES_HOME" = /home/container ] && [ ! -e /home/container/config.yaml ]; then
+    echo "Moving Hermes data from .hermes to the server root"
+    shopt -s dotglob nullglob
+    mv -n /home/container/.hermes/* /home/container/
+    shopt -u dotglob nullglob
+    rmdir /home/container/.hermes 2>/dev/null \
+        || echo "Warning: some files already existed in the server root and were left in .hermes"
+fi
+
 mkdir -p \
     "$HERMES_HOME/backups" \
     "$HERMES_HOME/cron" \

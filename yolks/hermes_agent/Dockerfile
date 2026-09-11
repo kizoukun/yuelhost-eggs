@@ -19,9 +19,9 @@ RUN rm -f /usr/bin/tini \
 
 ENV USER=container \
     HOME=/home/container \
-    HERMES_HOME=/home/container/.hermes \
+    HERMES_HOME=/home/container \
     HERMES_WRITE_SAFE_ROOT=/home/container \
-    HERMES_LAZY_INSTALL_TARGET=/home/container/.hermes/lazy-packages \
+    HERMES_LAZY_INSTALL_TARGET=/home/container/lazy-packages \
     PATH=/opt/hermes/bin:/opt/hermes/.venv/bin:/home/container/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 COPY --chmod=0755 entrypoint.sh /entrypoint.sh

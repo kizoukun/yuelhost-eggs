@@ -6,16 +6,17 @@
 
 `ghcr.io/kizoukun/yolks:hermes_agent` is built from the official `nousresearch/hermes-agent` image (see [`yolks/hermes_agent`](../yolks/hermes_agent)). The tag follows the latest Hermes Agent release, and every release is also published as `hermes_agent_<version>`, e.g. `hermes_agent_v2026.9.7`. Wings pulls the image when the server starts, so a restart picks up a new release.
 
-The agent code lives in the image. Only agent data (`.hermes`: config, memory, skills, sessions) is stored on the server.
+The agent code lives in the image. Only agent data (config, memory, skills, sessions, logs) is stored on the server, directly in the server root (`HERMES_HOME=/home/container`). Servers created with the earlier `.hermes` layout are moved to the root on their next start.
 
 ## Setup
 
-1. Set an LLM API key (OpenRouter, Anthropic or Gemini) and optionally the provider and model.
-2. Set a Telegram and/or Discord bot token.
-3. Set the allowed user IDs for that platform. When blank, Hermes denies every sender.
-4. Start the server.
+1. Set an LLM API key (OpenRouter, Anthropic or Gemini). Leave the provider blank to auto-detect it from the key, and optionally set a model.
+2. For an OpenRouter-compatible proxy, set **OpenRouter Base URL**.
+3. Set a Telegram and/or Discord bot token.
+4. Set the allowed user IDs for that platform. When blank, Hermes denies every sender.
+5. Start the server.
 
-Other providers, platforms and tool keys can be added to `.hermes/.env`, and settings to `.hermes/config.yaml`, through the file manager. Values in `.hermes/.env` override the egg variables.
+Other providers, platforms and tool keys can be added to `.env`, and settings to `config.yaml`, through the file manager. Values in `.env` override the egg variables. The provider is written to `config.yaml` on every start (`auto` when blank), so set it with the egg variable rather than in `config.yaml`.
 
 ## Server ports
 
