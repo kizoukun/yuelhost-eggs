@@ -4,10 +4,10 @@
         "version": "PTDL_v2",
         "update_url": "https://raw.githubusercontent.com/kizoukun/yuelhost-eggs/main/hermes_agent/egg-hermes-agent.json"
     },
-    "exported_at": "2026-09-11T13:56:44+00:00",
+    "exported_at": "2026-09-11T14:12:45+00:00",
     "name": "Hermes Agent",
     "author": "kizoukungaming@gmail.com",
-    "description": "Hermes Agent by Nous Research, the self-improving open-source AI agent, running as a Telegram / Discord messaging gateway with persistent memory, skills and cron.\n\nSet an LLM API key plus a bot token and allowed user IDs, then start the server. Other providers and platforms can be configured in .env and config.yaml in the server root.\n\nhttps://github.com/NousResearch/hermes-agent",
+    "description": "Hermes Agent by Nous Research, the self-improving open-source AI agent, running as a Telegram / Discord messaging gateway with persistent memory, skills and cron.\n\nSet an LLM API key plus a bot token and allowed user IDs, then start the server. Other providers and platforms can be configured in .hermes/.env and .hermes/config.yaml.\n\nhttps://github.com/NousResearch/hermes-agent",
     "features": null,
     "docker_images": {
         "Hermes Agent (latest)": "ghcr.io/kizoukun/yolks:hermes_agent"
@@ -22,7 +22,7 @@
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/bash\n# Hermes Agent installation script\n# The Hermes Agent code ships in the yolk image; agent data is stored in the server root.\necho \"Hermes Agent install complete\"\n",
+            "script": "#!/bin/bash\n# Hermes Agent installation script\n# The Hermes Agent code ships in the yolk image; agent data is stored in .hermes on the server.\nmkdir -p /mnt/server/.hermes\necho \"Hermes Agent install complete\"\n",
             "container": "debian:bookworm-slim",
             "entrypoint": "bash"
         }

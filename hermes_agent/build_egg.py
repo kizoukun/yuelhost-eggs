@@ -21,7 +21,8 @@ def var(name, env, default, rules, description):
 
 install_script = """#!/bin/bash
 # Hermes Agent installation script
-# The Hermes Agent code ships in the yolk image; agent data is stored in the server root.
+# The Hermes Agent code ships in the yolk image; agent data is stored in .hermes on the server.
+mkdir -p /mnt/server/.hermes
 echo "Hermes Agent install complete"
 """
 
@@ -45,7 +46,7 @@ egg = {
         "Hermes Agent by Nous Research, the self-improving open-source AI agent, running as a "
         "Telegram / Discord messaging gateway with persistent memory, skills and cron.\n\n"
         "Set an LLM API key plus a bot token and allowed user IDs, then start the server. "
-        "Other providers and platforms can be configured in .env and config.yaml in the server root.\n\n"
+        "Other providers and platforms can be configured in .hermes/.env and .hermes/config.yaml.\n\n"
         "https://github.com/NousResearch/hermes-agent"
     ),
     "features": None,

@@ -6,7 +6,7 @@
 
 `ghcr.io/kizoukun/yolks:hermes_agent` is built from the official `nousresearch/hermes-agent` image (see [`yolks/hermes_agent`](../yolks/hermes_agent)). The tag follows the latest Hermes Agent release, and every release is also published as `hermes_agent_<version>`, e.g. `hermes_agent_v2026.9.7`. Wings pulls the image when the server starts, so a restart picks up a new release.
 
-The agent code lives in the image. Only agent data (config, memory, skills, sessions, logs) is stored on the server, directly in the server root (`HERMES_HOME=/home/container`). Servers created with the earlier `.hermes` layout are moved to the root on their next start.
+The agent code lives in the image. Agent data (config, memory, skills, sessions, logs) is stored in `.hermes` on the server. Files the agent creates with its tools land in the server root, separate from its own data.
 
 ## Setup
 
@@ -16,7 +16,7 @@ The agent code lives in the image. Only agent data (config, memory, skills, sess
 4. Set the allowed user IDs for that platform. When blank, Hermes denies every sender.
 5. Start the server.
 
-Other providers, platforms and tool keys can be added to `.env`, and settings to `config.yaml`, through the file manager. Values in `.env` override the egg variables. The provider is written to `config.yaml` on every start (`auto` when blank), so set it with the egg variable rather than in `config.yaml`.
+Other providers, platforms and tool keys can be added to `.hermes/.env`, and settings to `.hermes/config.yaml`, through the file manager. Values in `.hermes/.env` override the egg variables. The provider is written to `.hermes/config.yaml` on every start (`auto` when blank), so set it with the egg variable rather than in the file.
 
 ## Server ports
 
