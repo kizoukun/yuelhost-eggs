@@ -1,0 +1,125 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": "https://raw.githubusercontent.com/kizoukun/yuelhost-eggs/main/webhost/egg-webhost.json"
+    },
+    "exported_at": "2026-09-11T13:46:54+00:00",
+    "name": "WebHost",
+    "author": "kizoukungaming@gmail.com",
+    "description": "Nginx + PHP-FPM web hosting for any PHP or static website, with optional WordPress or NamelessMC install, git deployment and Composer packages.",
+    "features": null,
+    "docker_images": {
+        "PHP 8.4": "ghcr.io/kizoukun/yolks:nginx_php_8.4",
+        "PHP 8.5": "ghcr.io/kizoukun/yolks:nginx_php_8.5",
+        "PHP 8.3": "ghcr.io/kizoukun/yolks:nginx_php_8.3",
+        "PHP 8.2": "ghcr.io/kizoukun/yolks:nginx_php_8.2"
+    },
+    "file_denylist": [],
+    "startup": "start-webhost",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"Web server running on port\"\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/ash\n# Web hosting installation script\n# Server files: /mnt/server\napk add --no-cache git curl unzip tar xz ca-certificates || { echo \"Failed to install packages\"; exit 1; }\n\nmkdir -p /mnt/server/webroot /mnt/server/logs /mnt/server/tmp\ncd /mnt/server/webroot || exit 1\n\nis_true() {\n    [ \"$1\" = \"1\" ] || [ \"$1\" = \"true\" ]\n}\n\n# The placeholder page created on first start does not count as website files.\nif [ \"$(ls -A)\" = \"index.php\" ] && grep -q \"Upload your website into the\" index.php; then\n    rm -f index.php\nfi\n\nif is_true \"${USER_UPLOAD}\"; then\n    echo \"User upload enabled, skipping website install\"\n    exit 0\nfi\n\nif is_true \"${WORDPRESS}\"; then\n    if [ -n \"$(ls -A)\" ]; then\n        echo \"webroot is not empty, skipping WordPress install\"\n        exit 0\n    fi\n    echo \"Installing WordPress\"\n    curl -fsSL -o /tmp/wordpress.tar.gz https://wordpress.org/latest.tar.gz || { echo \"Failed to download WordPress\"; exit 1; }\n    echo \"$(curl -fsSL https://wordpress.org/latest.tar.gz.sha1)  /tmp/wordpress.tar.gz\" | sha1sum -c - || { echo \"WordPress checksum mismatch\"; exit 1; }\n    tar -xzf /tmp/wordpress.tar.gz --strip-components=1 -C /mnt/server/webroot\n    rm -f /tmp/wordpress.tar.gz\n    echo \"WordPress installed. Open http://ip:port/ to finish the setup\"\n    exit 0\nfi\n\nif is_true \"${NAMELESSMC}\"; then\n    if [ -n \"$(ls -A)\" ]; then\n        echo \"webroot is not empty, skipping NamelessMC install\"\n        exit 0\n    fi\n    echo \"Installing NamelessMC\"\n    curl -fsSL -o /tmp/nameless.tar.xz https://github.com/NamelessMC/Nameless/releases/latest/download/nameless-deps-dist.tar.xz \\\n        || { echo \"Failed to download NamelessMC\"; exit 1; }\n    tar -xJf /tmp/nameless.tar.xz -C /mnt/server/webroot\n    rm -f /tmp/nameless.tar.xz\n    # The archive root is mode 700, which tar applies to webroot.\n    chmod 755 /mnt/server/webroot\n    echo \"NamelessMC installed. Open http://ip:port/ to finish the setup\"\n    exit 0\nfi\n\nif [ -n \"${GIT_ADDRESS}\" ]; then\n    case \"${GIT_ADDRESS}\" in\n        *.git) ;;\n        *) GIT_ADDRESS=\"${GIT_ADDRESS}.git\" ;;\n    esac\n\n    # Authenticate without storing the token in .git/config.\n    set --\n    if [ -n \"${USERNAME}\" ] && [ -n \"${ACCESS_TOKEN}\" ]; then\n        set -- -c \"http.extraHeader=Authorization: Basic $(printf '%s:%s' \"${USERNAME}\" \"${ACCESS_TOKEN}\" | base64 | tr -d '\\n')\"\n    fi\n\n    if [ -d .git ]; then\n        echo \"Pulling the latest changes\"\n        git \"$@\" pull --ff-only || { echo \"git pull failed\"; exit 1; }\n    elif [ -n \"$(ls -A)\" ]; then\n        echo \"webroot has files but no git repository, skipping clone\"\n    elif [ -n \"${BRANCH}\" ]; then\n        echo \"Cloning branch ${BRANCH}\"\n        git \"$@\" clone --single-branch --branch \"${BRANCH}\" \"${GIT_ADDRESS}\" . || { echo \"git clone failed\"; exit 1; }\n    else\n        echo \"Cloning the default branch\"\n        git \"$@\" clone \"${GIT_ADDRESS}\" . || { echo \"git clone failed\"; exit 1; }\n    fi\n    exit 0\nfi\n\necho \"Install complete. A placeholder page is created on first start\"\n",
+            "container": "alpine:3.24",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "WordPress",
+            "description": "Install the latest WordPress into an empty webroot.\n\n0 = off (default)\n1 = on",
+            "env_variable": "WORDPRESS",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "NamelessMC",
+            "description": "Install the latest NamelessMC into an empty webroot and use its Nginx config.\n\n0 = off (default)\n1 = on",
+            "env_variable": "NAMELESSMC",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Repository",
+            "description": "HTTPS address of a git repository to deploy into webroot, e.g. https://github.com/user/site",
+            "env_variable": "GIT_ADDRESS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Branch",
+            "description": "Branch to clone. Leave blank for the default branch.",
+            "env_variable": "BRANCH",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Username",
+            "description": "Username for a private repository.",
+            "env_variable": "USERNAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Access Token",
+            "description": "Personal access token for a private repository. It is never written to .git/config.",
+            "env_variable": "ACCESS_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Update",
+            "description": "Pull the latest git changes on every start.\n\n0 = off (default)\n1 = on",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "User Uploaded Files",
+            "description": "Skip the website install and upload files yourself.\n\n0 = off (default)\n1 = on",
+            "env_variable": "USER_UPLOAD",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Composer Packages",
+            "description": "Composer packages to require on start, separated by spaces, e.g. guzzlehttp/guzzle",
+            "env_variable": "COMPOSER_MODULES",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:512",
+            "field_type": "text"
+        }
+    ]
+}
