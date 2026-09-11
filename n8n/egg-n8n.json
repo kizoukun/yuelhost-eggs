@@ -1,0 +1,122 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": "https://raw.githubusercontent.com/kizoukun/yuelhost-eggs/main/n8n/egg-n8n.json"
+    },
+    "exported_at": "2026-09-11T14:04:48+00:00",
+    "name": "n8n",
+    "author": "kizoukungaming@gmail.com",
+    "description": "n8n workflow automation. Build automations with 400+ integrations, webhooks, schedules and AI agents in a visual editor.\n\nOpen http://ip:port after the first start to create the owner account.\n\nhttps://n8n.io",
+    "features": null,
+    "docker_images": {
+        "n8n (latest)": "ghcr.io/kizoukun/yolks:n8n"
+    },
+    "file_denylist": [],
+    "startup": "exec n8n start",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"Editor is now accessible via\"\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/ash\n# n8n installation script\n# The n8n code ships in the yolk image; workflows and credentials are stored in .n8n on the server.\nmkdir -p /mnt/server/.n8n\necho \"n8n install complete\"\n",
+            "container": "alpine:3.24",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Public URL",
+            "description": "Public address when n8n is served on a domain through a reverse proxy, e.g. https://n8n.example.com. Used for the editor and webhook URLs. Leave blank to use http://ip:port.",
+            "env_variable": "N8N_EDITOR_BASE_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|url|max:256",
+            "field_type": "text"
+        },
+        {
+            "name": "Timezone",
+            "description": "Timezone for Schedule triggers and date functions, e.g. Asia/Jakarta or UTC.",
+            "env_variable": "GENERIC_TIMEZONE",
+            "default_value": "Asia/Jakarta",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Database Type",
+            "description": "sqlite (default, stored in .n8n) or postgresdb. MySQL is not supported by n8n.",
+            "env_variable": "DB_TYPE",
+            "default_value": "sqlite",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:sqlite,postgresdb",
+            "field_type": "text"
+        },
+        {
+            "name": "PostgreSQL Host",
+            "description": "PostgreSQL host when Database Type is postgresdb.",
+            "env_variable": "DB_POSTGRESDB_HOST",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:256",
+            "field_type": "text"
+        },
+        {
+            "name": "PostgreSQL Port",
+            "description": "PostgreSQL port.",
+            "env_variable": "DB_POSTGRESDB_PORT",
+            "default_value": "5432",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:1,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "PostgreSQL Database",
+            "description": "PostgreSQL database name.",
+            "env_variable": "DB_POSTGRESDB_DATABASE",
+            "default_value": "n8n",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "PostgreSQL User",
+            "description": "PostgreSQL username.",
+            "env_variable": "DB_POSTGRESDB_USER",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "PostgreSQL Password",
+            "description": "PostgreSQL password.",
+            "env_variable": "DB_POSTGRESDB_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:256",
+            "field_type": "text"
+        },
+        {
+            "name": "Telemetry",
+            "description": "Send anonymous usage data to n8n.\n\nfalse = off (default)\ntrue = on",
+            "env_variable": "N8N_DIAGNOSTICS_ENABLED",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "field_type": "text"
+        }
+    ]
+}
