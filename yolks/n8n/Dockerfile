@@ -12,6 +12,14 @@ ENV USER=container \
     N8N_USER_FOLDER=/home/container \
     N8N_LISTEN_ADDRESS=0.0.0.0
 
+# Pin the settings n8n warns about deprecating, so an upstream default change
+# never moves them under a running server. Community nodes stay limited to
+# verified ones, and the compression limits use the safer upcoming defaults.
+ENV N8N_UNVERIFIED_PACKAGES_ENABLED=false \
+    N8N_RUNNERS_TASK_TIMEOUT=300 \
+    N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES=268435456 \
+    N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES=1000
+
 COPY --chmod=0755 entrypoint.sh /entrypoint.sh
 
 WORKDIR /home/container

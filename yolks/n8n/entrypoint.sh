@@ -35,15 +35,21 @@ if [ -z "$N8N_SECURE_COOKIE" ]; then
     esac
 fi
 
-# Keep the Node.js heap inside the server's memory limit (SERVER_MEMORY is in MiB).
-case "$NODE_OPTIONS" in
-    *max-old-space-size*) ;;
-    *)
-        if [ "${SERVER_MEMORY:-0}" -gt 0 ] 2>/dev/null; then
-            export NODE_OPTIONS="--max-old-space-size=$((SERVER_MEMORY * 3 / 4)) ${NODE_OPTIONS}"
-        fi
-        ;;
-esac
+# Keep the Node.js heaps inside the server's memory limit (SERVER_MEMORY is in
+# MiB). n8n runs the main process plus a task runner child process, so the
+# limit is split between them and a quarter is left for non-heap memory.
+if [ "${SERVER_MEMORY:-0}" -gt 0 ] 2>/dev/null; then
+    case "$NODE_OPTIONS" in
+        *max-old-space-size*) ;;
+        *) export NODE_OPTIONS="--max-old-space-size=$((SERVER_MEMORY * 55 / 100)) ${NODE_OPTIONS}" ;;
+    esac
+    if [ -z "$N8N_RUNNERS_MAX_OLD_SPACE_SIZE" ]; then
+        export N8N_RUNNERS_MAX_OLD_SPACE_SIZE="$((SERVER_MEMORY * 20 / 100))"
+    fi
+    if [ "$SERVER_MEMORY" -lt 2048 ]; then
+        echo "Warning: n8n needs about 2048 MiB of memory. This server has ${SERVER_MEMORY} MiB and may be killed while it runs out of memory."
+    fi
+fi
 
 # Convert "{{VARIABLE}}" in the startup command to "${VARIABLE}" and run it.
 PARSED=$(echo "$STARTUP" | sed -e 's/{{/${/g' -e 's/}}/}/g')

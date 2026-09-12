@@ -31,6 +31,8 @@ SQLite is used by default and stored in `.n8n/database.sqlite`. For larger setup
 
 ## Notes
 
-- The Node.js heap is limited to 75% of the server's memory. n8n needs at least 1 GB for comfortable use.
+- **Memory:** give the server at least 2 GB. n8n runs a main process plus a task runner child process; the memory limit is split between them (55% main heap, 20% runner heap) and the server warns in the console below 2 GB. Database migrations on start are the heaviest moment, so a 1 GB server gets killed for running out of memory (exit code 137).
 - Task runners run in internal mode, so the Code node supports JavaScript. Python in the Code node needs an external runner and is not available.
+- Community nodes are limited to verified ones (`N8N_UNVERIFIED_PACKAGES_ENABLED=false`).
+- The settings n8n warns about deprecating are pinned in the image, so upstream default changes never move them under a running server.
 - Telemetry to n8n is off by default.
