@@ -46,8 +46,8 @@ if [ "${SERVER_MEMORY:-0}" -gt 0 ] 2>/dev/null; then
     if [ -z "$N8N_RUNNERS_MAX_OLD_SPACE_SIZE" ]; then
         export N8N_RUNNERS_MAX_OLD_SPACE_SIZE="$((SERVER_MEMORY * 20 / 100))"
     fi
-    if [ "$SERVER_MEMORY" -lt 2048 ]; then
-        echo "Warning: n8n needs about 2048 MiB of memory. This server has ${SERVER_MEMORY} MiB and may be killed while it runs out of memory."
+    if [ "$SERVER_MEMORY" -lt 1024 ]; then
+        echo "Warning: n8n needs at least 1024 MiB of memory. This server has ${SERVER_MEMORY} MiB and will likely be killed while it runs out of memory."
     fi
 fi
 
