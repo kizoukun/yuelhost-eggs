@@ -17,6 +17,7 @@ seed nginx/nginx.conf
 seed php-fpm/php-fpm.conf
 seed php-fpm/pool.d/www.conf
 seed php-fpm/conf.d/99-webhost.ini
+seed startup.sh
 if [ ! -e nginx/conf.d/default.conf ]; then
     if [ "${NAMELESSMC}" = "1" ] || [ "${NAMELESSMC}" = "true" ]; then
         cp "$DEFAULTS/templates/namelessmc.conf" nginx/conf.d/default.conf
@@ -47,6 +48,14 @@ fi
 if [ -n "${COMPOSER_MODULES}" ]; then
     # shellcheck disable=SC2086
     composer require ${COMPOSER_MODULES} --no-interaction --working-dir=webroot || warn "composer require failed"
+fi
+
+# Commands to run before the web server starts, e.g. Laravel migrations.
+# The git credentials are removed from its environment.
+if [ -f startup.sh ]; then
+    echo "Running startup.sh"
+    (cd webroot && env -u USERNAME -u ACCESS_TOKEN bash /home/container/startup.sh) \
+        || warn "startup.sh failed, starting the web server anyway"
 fi
 
 php-fpm -y /home/container/php-fpm/php-fpm.conf -D || fail "PHP-FPM failed to start, see logs/php-fpm.log"

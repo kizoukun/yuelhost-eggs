@@ -21,6 +21,7 @@ Images are built from [`yolks/nginx_php`](../yolks/nginx_php) and rebuilt weekly
 | `nginx/nginx.conf`, `nginx/conf.d/default.conf` | Nginx config |
 | `php-fpm/php-fpm.conf`, `php-fpm/pool.d/www.conf` | PHP-FPM config |
 | `php-fpm/conf.d/99-webhost.ini` | PHP settings (memory limit, upload size, ...) |
+| `startup.sh` | Commands run before the web server starts |
 | `logs/` | Access, error and PHP logs |
 
 Config files are created on the first start and never overwritten afterwards, so edits are kept. Delete a file and restart to get the default back. The `listen` port in `default.conf` is set to the server's primary allocation on every start.
@@ -30,9 +31,11 @@ Config files are created on the first start and never overwritten afterwards, so
 - **Static or PHP site:** upload files into `webroot`, or set **Git Repository** (plus username and access token for private repositories) and reinstall.
 - **WordPress / NamelessMC:** enable the option and reinstall while `webroot` is empty, then open `http://ip:port/` to finish the setup. A database has to be created in the panel.
 - **Composer:** a `composer.json` without `vendor/` is installed automatically on start; extra packages can be listed in **Composer Packages**.
+- **Startup commands:** `startup.sh` runs in `webroot` on every start, after Composer and before the web server starts. Put commands such as `php artisan migrate --force` and `php artisan optimize` in it for Laravel. A failing command is reported in the console and the web server still starts.
 
 ## Notes
 
 - Access logs are written to `logs/access.log` only; Nginx and PHP errors also show in the console.
 - Dotfiles such as `.env` and `.git` are not served.
 - The git access token is sent as an HTTP header and is not stored in `.git/config`.
+- `startup.sh` sits outside `webroot`, so it is not served, and it runs as the unprivileged `container` user without the git username and access token in its environment.
