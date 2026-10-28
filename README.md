@@ -9,8 +9,11 @@ Pterodactyl eggs and yolks (Docker images) used on YuelHost.
 | [Hermes Agent](hermes_agent) | `ghcr.io/kizoukun/yolks:hermes_agent` |
 | [WebHost](webhost) | `ghcr.io/kizoukun/yolks:nginx_php_<8.2-8.5>` |
 | [n8n](n8n) | `ghcr.io/kizoukun/yolks:n8n` |
+| [Vanilla Bedrock](minecraft_bedrock) | `ghcr.io/pelican-eggs/yolks:debian` |
 
 Import an egg in the panel under **Admin → Nests → Import Egg** using the `egg-*.json` file.
+
+The Vanilla Bedrock egg is generated: edit `minecraft_bedrock/build_egg.py` or `install.sh`, then run `python3 minecraft_bedrock/build_egg.py`. Its startup line forces `transport=nethernet`, sets `server-port`, removes any `server-ip` line, writes `server-udp-ports` from the panel's `NETHERNET_UDP_PORTS`, and saves the server identity key on the first start.
 
 ## Yolks
 

@@ -1,0 +1,104 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": "https://raw.githubusercontent.com/kizoukun/yuelhost-eggs/main/minecraft_bedrock/egg-minecraft-bedrock.json"
+    },
+    "exported_at": "2026-10-28T11:46:31+00:00",
+    "name": "Vanilla Bedrock",
+    "author": "kizoukungaming@gmail.com",
+    "description": "Minecraft Bedrock Dedicated Server on the NetherNet transport, based on the pelican-eggs Vanilla Bedrock egg.\n\nBedrock players join through the server subdomain on port 443 (TLS signaling through Nginx Proxy Manager); gameplay is UDP straight to the node on the server port. The panel sets NETHERNET_UDP_PORTS.",
+    "features": [
+        "pid_limit"
+    ],
+    "docker_images": {
+        "ghcr.io/pelican-eggs/yolks:debian": "ghcr.io/pelican-eggs/yolks:debian"
+    },
+    "file_denylist": [],
+    "startup": "sed -i -e '/^server-ip=/d' -e '/^server-port=/d' -e '/^transport=/d' server.properties; echo \"server-port=${SERVER_PORT}\" >> server.properties; echo transport=nethernet >> server.properties; if test -n \"${NETHERNET_UDP_PORTS}\"; then sed -i \"/^server-udp-ports=/d\" server.properties && echo \"server-udp-ports=${NETHERNET_UDP_PORTS}\" >> server.properties; fi; if test -f keys/server_identity_key.pem; then ./bedrock_server; else rm -f /tmp/bds.in && mkfifo /tmp/bds.in; (until (: < /dev/tcp/127.0.0.1/${SERVER_PORT}) 2>/dev/null; do sleep 2; done; echo serveridentity save; exec cat) <&0 > /tmp/bds.in & ./bedrock_server < /tmp/bds.in; kill $! 2>/dev/null; fi",
+    "config": {
+        "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"server-name\": \"{{server.build.env.SERVERNAME}}\",\n            \"gamemode\": \"{{server.build.env.GAMEMODE}}\",\n            \"difficulty\": \"{{server.build.env.DIFFICULTY}}\",\n            \"level-name\": \"{{server.build.env.WORLDNAME}}\",\n            \"allow-cheats\": \"{{server.build.env.CHEATS}}\"\n        }\n    }\n}",
+        "startup": "{\n    \"done\": \"Server started\"\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n\napt update\napt install -y zip unzip wget curl\n\nif [ ! -d /mnt/server/ ]; then\n    mkdir /mnt/server/\nfi\n\ncd /mnt/server\n\n# Minecraft CDN Akamai blocks script user-agents\nRANDVERSION=$(echo $((1 + $RANDOM % 4000)))\n\nif [ -z \"${BEDROCK_VERSION}\" ] || [ \"${BEDROCK_VERSION}\" == \"latest\" ]; then\n    echo -e \"\\n Downloading latest Bedrock server\"\n    curl -L -A \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.$RANDVERSION.212 Safari/537.36\" -H \"Accept-Language: en\" -H \"Accept-Encoding: gzip, deflate\" -o versions.html.gz https://net-secondary.web.minecraft-services.net/api/v1.0/download/links\n    DOWNLOAD_URL=$(zgrep -o 'https://www.minecraft.net/bedrockdedicatedserver/bin-linux/[^\"]*' versions.html.gz)\nelse \n    echo -e \"\\n Downloading ${BEDROCK_VERSION} Bedrock server\"\n    DOWNLOAD_URL=https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$BEDROCK_VERSION.zip\nfi\n\nDOWNLOAD_FILE=$(echo ${DOWNLOAD_URL} | cut -d\"/\" -f5) # Retrieve archive name\n\n# BDS ships allow-list=true with an empty allowlist.json, which rejects every player. Open new servers by default;\n# reinstalls keep whatever the owner set.\nif [ ! -f server.properties ]; then\n    FIRST_INSTALL=1\nfi\n\necho -e \"backing up config files\"\nrm *.bak versions.html.gz\ncp server.properties server.properties.bak\ncp permissions.json permissions.json.bak\ncp allowlist.json allowlist.json.bak\n\n\necho -e \"Downloading files from: $DOWNLOAD_URL\"\n\ncurl -L -A \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.$RANDVERSION.212 Safari/537.36\" -H \"Accept-Language: en\" -o $DOWNLOAD_FILE $DOWNLOAD_URL\n\necho -e \"Unpacking server files\"\nunzip -o $DOWNLOAD_FILE\n\necho -e \"Cleaning up after installing\"\nrm $DOWNLOAD_FILE\n\necho -e \"restoring backup config files - on first install there will be file not found errors which you can ignore.\"\ncp -rf server.properties.bak server.properties\ncp -rf permissions.json.bak permissions.json\ncp -rf allowlist.json.bak allowlist.json\n\nif [ -n \"${FIRST_INSTALL}\" ]; then\n    sed -i 's/^allow-list=.*/allow-list=false/' server.properties\nfi\n\nchmod +x bedrock_server\n\necho -e \"Install Completed\"\n",
+            "container": "ghcr.io/pelican-eggs/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Bedrock Version",
+            "description": "The version of bedrock. (Ex. 1.7.0.13)\n\nDefault version is latest.",
+            "env_variable": "BEDROCK_VERSION",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "ld lib path",
+            "description": "Dumb reasons to need this",
+            "env_variable": "LD_LIBRARY_PATH",
+            "default_value": ".",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Name",
+            "description": "The name for the server",
+            "env_variable": "SERVERNAME",
+            "default_value": "Bedrock Dedicated Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:50",
+            "field_type": "text"
+        },
+        {
+            "name": "Gamemode",
+            "description": "Allowed values: \"survival\", \"creative\", or \"adventure\"",
+            "env_variable": "GAMEMODE",
+            "default_value": "survival",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:survival,creative,adventure",
+            "field_type": "text"
+        },
+        {
+            "name": "Difficulty",
+            "description": "Allowed values: \"peaceful\", \"easy\", \"normal\", or \"hard\"",
+            "env_variable": "DIFFICULTY",
+            "default_value": "easy",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:peaceful,easy,normal,hard",
+            "field_type": "text"
+        },
+        {
+            "name": "Allow cheats",
+            "description": "If true then cheats like commands can be used.\n\nAllowed values: \"true\" or \"false\"",
+            "env_variable": "CHEATS",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "field_type": "text"
+        },
+        {
+            "name": "Choose World",
+            "description": "If you have multiple world files, Enter the World Folder Name you want to Select to Start the Server",
+            "env_variable": "WORLDNAME",
+            "default_value": "default",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:100",
+            "field_type": "text"
+        }
+    ]
+}
