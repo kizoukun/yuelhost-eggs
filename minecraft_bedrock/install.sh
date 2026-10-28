@@ -23,8 +23,6 @@ fi
 
 DOWNLOAD_FILE=$(echo ${DOWNLOAD_URL} | cut -d"/" -f5) # Retrieve archive name
 
-# BDS ships allow-list=true with an empty allowlist.json, which rejects every player. Open new servers by default;
-# reinstalls keep whatever the owner set.
 if [ ! -f server.properties ]; then
     FIRST_INSTALL=1
 fi

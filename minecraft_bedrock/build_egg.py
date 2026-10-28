@@ -1,4 +1,3 @@
-"""Generate egg-minecraft-bedrock.json from install.sh. Run: python3 minecraft_bedrock/build_egg.py"""
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,20 +18,12 @@ def var(name, env, default, rules, description, viewable=True):
     }
 
 
-# The yolk runs the startup line through `echo -e ${STARTUP}` and `eval`, so it must stay on one line with no
-# glob characters (* ? [) and no backslashes. NETHERNET_UDP_PORTS comes from the panel (<public IP>:<port>:<port>),
-# never from an egg variable, because the container sits on a Docker bridge and cannot see the node's public IP.
 startup = "; ".join([
-    # Binding the public IP inside the container breaks TCP, so server-ip is never written.
     "sed -i -e '/^server-ip=/d' -e '/^server-port=/d' -e '/^transport=/d' server.properties",
     'echo "server-port=${SERVER_PORT}" >> server.properties',
     "echo transport=nethernet >> server.properties",
-    # Only one entry: comma lists in server-udp-ports break joins.
     'if test -n "${NETHERNET_UDP_PORTS}"; then sed -i "/^server-udp-ports=/d" server.properties'
     ' && echo "server-udp-ports=${NETHERNET_UDP_PORTS}" >> server.properties; fi',
-    # Without a saved identity key players re-accept trust after every restart. On a start without one, feed
-    # "serveridentity save" to the console once the signaling port answers, then pass the panel console through.
-    # The explicit <&0 matters: bash otherwise points a background job's stdin at /dev/null and cat exits at once.
     "if test -f keys/server_identity_key.pem; then ./bedrock_server",
     "else rm -f /tmp/bds.in && mkfifo /tmp/bds.in",
     "(until (: < /dev/tcp/127.0.0.1/${SERVER_PORT}) 2>/dev/null; do sleep 2; done; echo serveridentity save; exec cat) <&0 > /tmp/bds.in &"
